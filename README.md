@@ -127,6 +127,60 @@ This project prioritizes **visual excellence** and **user experience**:
 - ✅ Performance-optimized for fast load times
 - ✅ Clean, maintainable code structure
 
+## 🚀 Deployment
+
+### **GitHub Pages Deployment**
+
+This project is configured for automatic deployment to GitHub Pages.
+
+**Deploy commands:**
+```bash
+# Build and deploy to GitHub Pages
+npm run deploy
+
+# This runs:
+# 1. npm run build (creates production build in dist/)
+# 2. gh-pages -d dist (deploys dist folder to gh-pages branch)
+```
+
+**First-time setup:**
+1. Install gh-pages: `npm install --save-dev gh-pages`
+2. Ensure `vite.config.js` has `base: '/lyrics-finder/'`
+3. Run `npm run deploy`
+4. Go to GitHub repo → Settings → Pages
+5. Set source to `gh-pages` branch
+6. Wait 1-2 minutes for deployment
+
+**Updating the live site:**
+```bash
+# Make your changes, then:
+git add .
+git commit -m "Your update message"
+git push
+
+# Deploy to GitHub Pages
+npm run deploy
+```
+
+### **Troubleshooting**
+
+**Background images not showing on GitHub Pages:**
+- Clear browser cache with hard refresh: `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
+- Wait 2-3 minutes after deployment for GitHub Pages to update
+- Verify images exist at: `https://hrishikesh-arch.github.io/lyrics-finder/music-left.svg`
+
+**Build errors:**
+- Delete `node_modules` and `package-lock.json`
+- Run `npm install` again
+- Try `npm run build` to check for errors
+
+**Local development issues:**
+- Ensure dev server is running: `npm run dev`
+- Check console for errors: Press F12 in browser
+- Verify you're accessing `http://localhost:5173/lyrics-finder/`
+
+
+
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to:
