@@ -68,7 +68,7 @@ function App() {
               className="absolute left-[-10%] top-1/2 -translate-y-1/2 w-[50%] max-w-2xl"
             >
               <img
-                src="/music-left.svg"
+                src={`${import.meta.env.BASE_URL}music-left.svg`}
                 alt=""
                 className="w-full h-auto"
                 style={{ filter: 'drop-shadow(0 0 60px rgba(167, 139, 250, 0.4))' }}
@@ -83,7 +83,7 @@ function App() {
               className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-[50%] max-w-2xl"
             >
               <img
-                src="/music-right.svg"
+                src={`${import.meta.env.BASE_URL}music-right.svg`}
                 alt=""
                 className="w-full h-auto"
                 style={{ filter: 'drop-shadow(0 0 60px rgba(251, 146, 60, 0.4))' }}
