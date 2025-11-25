@@ -2,6 +2,10 @@
 
 A stunning, modern web application that helps you discover song lyrics with an immersive karaoke experience. Built with React and powered by real-time lyrics APIs.
 
+## 🌐 Live Demo
+
+**Try it now:** [https://hrishikesh-arch.github.io/lyrics-finder/](https://hrishikesh-arch.github.io/lyrics-finder/)
+
 ![React](https://img.shields.io/badge/React-19.2.0-61dafb?logo=react)
 ![Vite](https://img.shields.io/badge/Vite-7.2.4-646cff?logo=vite)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.17-38bdf8?logo=tailwindcss)
@@ -46,7 +50,7 @@ A stunning, modern web application that helps you discover song lyrics with an i
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/lyrics-finder.git
+   git clone https://github.com/hrishikesh-arch/lyrics-finder.git
    cd lyrics-finder
    ```
 
