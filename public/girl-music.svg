@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <!-- Background -->
+  <rect width="400" height="400" fill="#f0f4ff"/>
+  
+  <!-- Girl with headphones -->
+  <circle cx="200" cy="150" r="60" fill="#ffb6c1"/>
+  
+  <!-- Headphones -->
+  <path d="M 140 130 Q 140 100 170 100" stroke="#ff69b4" stroke-width="8" fill="none"/>
+  <path d="M 260 130 Q 260 100 230 100" stroke="#ff69b4" stroke-width="8" fill="none"/>
+  <circle cx="140" cy="140" r="20" fill="#ff69b4"/>
+  <circle cx="260" cy="140" r="20" fill="#ff69b4"/>
+  <path d="M 170 100 L 230 100" stroke="#ff69b4" stroke-width="8"/>
+  
+  <!-- Body -->
+  <ellipse cx="200" cy="260" rx="70" ry="90" fill="#9370db"/>
+  
+  <!-- Arms -->
+  <ellipse cx="130" cy="240" rx="15" ry="50" fill="#ffb6c1" transform="rotate(-20 130 240)"/>
+  <ellipse cx="270" cy="240" rx="15" ry="50" fill="#ffb6c1" transform="rotate(20 270 240)"/>
+  
+  <!-- Music notes -->
+  <text x="80" y="100" font-size="40" fill="#ff69b4">♪</text>
+  <text x="300" y="120" font-size="35" fill="#9370db">♫</text>
+  <text x="100" y="300" font-size="30" fill="#ff69b4">♪</text>
+  <text x="290" y="280" font-size="38" fill="#9370db">♬</text>
+</svg>

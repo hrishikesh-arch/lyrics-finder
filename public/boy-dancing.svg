@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <!-- Background -->
+  <rect width="400" height="400" fill="#fff5e6"/>
+  
+  <!-- Boy dancing -->
+  <circle cx="200" cy="120" r="50" fill="#87ceeb"/>
+  
+  <!-- Body in dancing pose -->
+  <ellipse cx="200" cy="230" rx="60" ry="80" fill="#4169e1"/>
+  
+  <!-- Arms raised -->
+  <ellipse cx="140" cy="180" rx="15" ry="55" fill="#87ceeb" transform="rotate(-45 140 180)"/>
+  <ellipse cx="260" cy="180" rx="15" ry="55" fill="#87ceeb" transform="rotate(45 260 180)"/>
+  
+  <!-- Legs in motion -->
+  <ellipse cx="180" cy="310" rx="18" ry="60" fill="#87ceeb" transform="rotate(-15 180 310)"/>
+  <ellipse cx="220" cy="310" rx="18" ry="60" fill="#87ceeb" transform="rotate(15 220 310)"/>
+  
+  <!-- Sound waves and beats -->
+  <circle cx="100" cy="150" r="5" fill="#ffa500" opacity="0.7"/>
+  <circle cx="80" cy="170" r="8" fill="#ffa500" opacity="0.5"/>
+  <circle cx="300" cy="160" r="6" fill="#ff6347" opacity="0.7"/>
+  <circle cx="320" cy="180" r="9" fill="#ff6347" opacity="0.5"/>
+  
+  <!-- Music notes -->
+  <text x="70" y="250" font-size="45" fill="#ffa500">♪</text>
+  <text x="310" y="270" font-size="40" fill="#ff6347">♫</text>
+  <text x="90" y="90" font-size="35" fill="#4169e1">♬</text>
+  <text x="300" y="100" font-size="38" fill="#ffa500">♪</text>
+</svg>
