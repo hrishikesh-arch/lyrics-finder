@@ -231,13 +231,13 @@ const LyricsDisplay = ({ data, theme }) => {
             </a>
 
             <a
-              href={`https://www.capetown2014.co.za/?s=${encodeURIComponent(artist + ' ' + title)}`}
+              href="https://pixabay.com/music/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-all shadow-lg hover:shadow-blue-600/40"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full transition-all shadow-lg hover:shadow-green-600/40"
             >
               <Music2 size={20} className="fill-white" />
-              <span className="text-sm tracking-wide">GET TRACK</span>
+              <span className="text-sm tracking-wide">FREE MUSIC</span>
             </a>
 
             <div className="flex gap-2">
