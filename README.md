@@ -16,8 +16,9 @@ A stunning, modern web application that helps you discover song lyrics with an i
 ### 🎤 **Karaoke Mode**
 - **Time-synced lyrics highlighting** - Words light up in perfect sync with the music
 - **Auto-scrolling** - Lyrics automatically scroll as the song progresses
+- **Pitch/Key Control** - Adjust the song's key with a user-friendly "Key Change" interface
 - **Beautiful typography** - Optimized font sizes and word wrapping for maximum readability
-- **Immersive experience** - Full-screen karaoke mode with elegant animations
+- **Immersive experience** - Full-screen karaoke mode with elegant animations and "pop" effects for active lyrics
 
 ### 🎨 **Dynamic Theming**
 - **Genre-based color schemes** - UI adapts to the music genre (Pop, Rock, Hip-Hop, Jazz, Electronic, etc.)
@@ -29,6 +30,7 @@ A stunning, modern web application that helps you discover song lyrics with an i
 - Search by **artist** and **song title**
 - Fetches lyrics from multiple sources (LRCLIB, iTunes)
 - Displays **album artwork**, **genre**, and **release year**
+- **Direct Music Download** - Get tracks easily via integrated links
 - Error handling with helpful feedback
 
 ### 🎭 **Premium UI/UX**
@@ -43,6 +45,7 @@ A stunning, modern web application that helps you discover song lyrics with an i
 - **Build Tool:** Vite 7.2.4
 - **Styling:** TailwindCSS 4.1.17
 - **Animations:** Framer Motion 12.23.24
+- **Audio Processing:** Tone.js 15.1.22
 - **HTTP Client:** Axios 1.13.2
 - **Icons:** Lucide React 0.554.0
 

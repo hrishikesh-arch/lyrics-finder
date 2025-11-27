@@ -10,25 +10,32 @@ const ITUNES_URL = 'https://itunes.apple.com/search';
 const SongCard = ({ song, index, onSelect, theme }) => {
     const [artwork, setArtwork] = useState(null);
 
-    const fetchArtwork = async () => {
-        if (artwork) return;
-        try {
+    useEffect(() => {
+        let isMounted = true;
+        const fetchArtwork = async () => {
             if (song.artwork) {
-                setArtwork(song.artwork);
+                if (isMounted) setArtwork(song.artwork);
                 return;
             }
-            const iTunesQuery = `${song.artistName} ${song.trackName}`;
-            const response = await axios.get(ITUNES_URL, {
-                params: { term: iTunesQuery, entity: 'song', limit: 1 },
-            });
-            if (response.data.resultCount > 0) {
-                const track = response.data.results[0];
-                setArtwork(track.artworkUrl100?.replace('100x100', '300x300'));
+            try {
+                // Add a small random delay to prevent hitting rate limits if rendering many cards at once
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+
+                const iTunesQuery = `${song.artistName} ${song.trackName}`;
+                const response = await axios.get(ITUNES_URL, {
+                    params: { term: iTunesQuery, entity: 'song', limit: 1 },
+                });
+                if (isMounted && response.data.resultCount > 0) {
+                    const track = response.data.results[0];
+                    setArtwork(track.artworkUrl100?.replace('100x100', '300x300'));
+                }
+            } catch (err) {
+                // ignore errors
             }
-        } catch (err) {
-            // ignore errors
-        }
-    };
+        };
+        fetchArtwork();
+        return () => { isMounted = false; };
+    }, [song]);
 
     return (
         <motion.div
@@ -36,7 +43,6 @@ const SongCard = ({ song, index, onSelect, theme }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.03 }}
             onClick={() => onSelect(song)}
-            onMouseEnter={fetchArtwork}
             className={`relative p-5 rounded-2xl cursor-pointer hover:scale-[1.03] transition-all group ${theme.glass} hover:bg-white/15 overflow-hidden`}
         >
             {/* Hover overlay */}

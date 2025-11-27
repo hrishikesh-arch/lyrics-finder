@@ -82,31 +82,36 @@ const LyricsDisplay = ({ data, theme }) => {
     const file = e.target.files[0];
     if (file) {
       console.log("🎤 Audio file selected:", file.name);
-      setAudioFile(file);
-      setIsAudioLoaded(false);
 
-      await Tone.start();
+      try {
+        await Tone.start();
 
-      const url = URL.createObjectURL(file);
+        const url = URL.createObjectURL(file);
 
-      if (playerRef.current) playerRef.current.dispose();
-      if (pitchShiftRef.current) pitchShiftRef.current.dispose();
+        if (playerRef.current) playerRef.current.dispose();
+        if (pitchShiftRef.current) pitchShiftRef.current.dispose();
 
-      const newPitchShift = new Tone.PitchShift(pitch).toDestination();
-      const newPlayer = new Tone.Player(url).connect(newPitchShift);
+        const newPitchShift = new Tone.PitchShift(pitch).toDestination();
+        const newPlayer = new Tone.Player(url).connect(newPitchShift);
 
-      // Sync player state
-      newPlayer.autostart = false;
-      await newPlayer.loaded;
+        // Sync player state
+        newPlayer.autostart = false;
+        await newPlayer.loaded;
 
-      playerRef.current = newPlayer;
-      pitchShiftRef.current = newPitchShift;
-      setIsAudioLoaded(true);
-      console.log("✅ Audio loaded and ready");
+        playerRef.current = newPlayer;
+        pitchShiftRef.current = newPitchShift;
+        setIsAudioLoaded(true);
+        console.log("✅ Audio loaded and ready");
 
-      // Auto-switch to karaoke mode and play
-      setMode('karaoke');
-      setIsPlaying(true);
+        // Auto-switch to karaoke mode but DO NOT auto-play
+        // This allows the user to press "Start" as requested
+        setMode('karaoke');
+        setIsPlaying(false);
+        setCurrentTime(0);
+      } catch (err) {
+        console.error("❌ Error loading audio:", err);
+        alert("Failed to load audio file. Please try another file.");
+      }
     }
   };
 
@@ -199,7 +204,7 @@ const LyricsDisplay = ({ data, theme }) => {
       className="w-full max-w-6xl mt-12 flex flex-col md:flex-row gap-10 items-start"
     >
       {/* Album Art & Metadata Panel */}
-      <div className="w-full md:w-1/3 flex flex-col gap-6 sticky top-8">
+      <div className={`w-full flex flex-col gap-6 sticky top-8 transition-all duration-500 ${mode === 'karaoke' ? 'md:w-1/4' : 'md:w-1/3'}`}>
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -231,13 +236,13 @@ const LyricsDisplay = ({ data, theme }) => {
             </a>
 
             <a
-              href="https://pixabay.com/music/"
+              href="https://microsafe.fr/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full transition-all shadow-lg hover:shadow-green-600/40"
             >
               <Music2 size={20} className="fill-white" />
-              <span className="text-sm tracking-wide">FREE MUSIC</span>
+              <span className="text-sm tracking-wide">GET TRACK</span>
             </a>
 
             <div className="flex gap-2">
@@ -279,7 +284,7 @@ const LyricsDisplay = ({ data, theme }) => {
       </div>
 
       {/* Lyrics Panel */}
-      <div className={`w-full md:w-2/3 p-10 md:p-14 rounded-3xl shadow-2xl min-h-[60vh] max-h-[80vh] relative overflow-hidden flex flex-col ${theme.glass}`}>
+      <div className={`w-full p-10 md:p-14 rounded-3xl shadow-2xl min-h-[60vh] max-h-[80vh] relative overflow-hidden flex flex-col transition-all duration-500 ${theme.glass} ${mode === 'karaoke' ? 'md:w-3/4' : 'md:w-2/3'}`}>
 
         {/* Decorative Icon */}
         <div className="absolute top-6 right-6 opacity-10 pointer-events-none">
@@ -304,11 +309,33 @@ const LyricsDisplay = ({ data, theme }) => {
             </div>
 
             {/* Audio Controls */}
-            <div className="flex flex-col gap-2 bg-black/20 p-4 rounded-xl">
+            <div className="flex flex-col gap-3 bg-black/20 p-5 rounded-2xl backdrop-blur-sm border border-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sliders size={18} className="text-purple-300" />
+                  <span className="text-sm font-bold text-white/80 tracking-wide">Key Change</span>
+                </div>
+                <span className="text-xs font-mono font-bold px-2 py-1 rounded bg-white/10 text-white/90">
+                  {pitch === 0 ? 'Original' : (pitch > 0 ? `+${pitch} Semitones` : `${pitch} Semitones`)}
+                </span>
+              </div>
+
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 flex-1">
-                  <Sliders size={16} className="text-white/60" />
-                  <span className="text-xs font-bold text-white/60">PITCH: {pitch > 0 ? `+${pitch}` : pitch}</span>
+                <button
+                  onClick={() => setPitch(p => Math.max(p - 1, -12))}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors active:scale-95"
+                  aria-label="Lower Pitch"
+                >
+                  <span className="text-xl font-medium">-</span>
+                </button>
+
+                <div className="flex-1 relative h-10 flex items-center">
+                  <div className="absolute w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-purple-500/50"
+                      style={{ width: `${((pitch + 12) / 24) * 100}%` }}
+                    />
+                  </div>
                   <input
                     type="range"
                     min="-12"
@@ -316,9 +343,21 @@ const LyricsDisplay = ({ data, theme }) => {
                     step="1"
                     value={pitch}
                     onChange={(e) => setPitch(parseInt(e.target.value))}
-                    className="flex-1 accent-purple-500 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                    className="absolute w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div
+                    className="absolute w-4 h-4 bg-white rounded-full shadow-lg pointer-events-none transition-all"
+                    style={{ left: `calc(${((pitch + 12) / 24) * 100}% - 8px)` }}
                   />
                 </div>
+
+                <button
+                  onClick={() => setPitch(p => Math.min(p + 1, 12))}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors active:scale-95"
+                  aria-label="Raise Pitch"
+                >
+                  <span className="text-xl font-medium">+</span>
+                </button>
               </div>
             </div>
           </div>
@@ -332,30 +371,40 @@ const LyricsDisplay = ({ data, theme }) => {
             </div>
           ) : (
             <div className="flex flex-col gap-4 py-10 text-center px-4">
-              {parsedLyrics.map((line, index) => {
-                const isActive = currentTime >= line.time && (index === parsedLyrics.length - 1 || currentTime < parsedLyrics[index + 1].time);
-                const isPast = currentTime > line.time;
+              {parsedLyrics.length > 0 ? (
+                parsedLyrics.map((line, index) => {
+                  const isActive = currentTime >= line.time && (index === parsedLyrics.length - 1 || currentTime < parsedLyrics[index + 1].time);
+                  const isPast = currentTime > line.time;
 
-                return (
-                  <motion.div
-                    key={index}
-                    animate={{
-                      scale: isActive ? 1.15 : 1,
-                      opacity: isActive ? 1 : isPast ? 0.3 : 0.5,
-                      color: isActive ? '#ffffff' : '#a3a3a3',
-                      filter: isActive ? 'blur(0px)' : 'blur(0.5px)'
-                    }}
-                    className={`font-bold text-xl md:text-3xl transition-all duration-300 leading-relaxed break-words max-w-4xl mx-auto ${isActive ? 'font-sans tracking-wide' : 'font-serif'}`}
-                    style={{
-                      wordWrap: 'break-word',
-                      overflowWrap: 'break-word',
-                      hyphens: 'auto'
-                    }}
-                  >
-                    {line.text}
-                  </motion.div>
-                );
-              })}
+                  return (
+                    <motion.div
+                      key={index}
+                      animate={{
+                        scale: isActive ? 1.25 : 1,
+                        opacity: isActive ? 1 : isPast ? 0.3 : 0.5,
+                        color: isActive ? '#ffffff' : '#a3a3a3',
+                        filter: isActive ? 'blur(0px)' : 'blur(0.5px)',
+                        textShadow: isActive ? '0 0 20px rgba(255,255,255,0.6)' : 'none'
+                      }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className={`font-bold text-xl md:text-3xl transition-all duration-300 leading-relaxed break-words max-w-4xl mx-auto ${isActive ? 'font-sans tracking-wide' : 'font-serif'}`}
+                      style={{
+                        wordWrap: 'break-word',
+                        overflowWrap: 'break-word',
+                        hyphens: 'auto'
+                      }}
+                    >
+                      {line.text}
+                    </motion.div>
+                  );
+                })
+              ) : (
+                <div className="text-white/50 text-xl font-medium mt-10">
+                  No synced lyrics available for this song.
+                  <br />
+                  <span className="text-sm opacity-70">You can still play the audio, but lyrics won't scroll.</span>
+                </div>
+              )}
             </div>
           )}
         </div>
