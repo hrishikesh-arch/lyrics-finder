@@ -2,6 +2,9 @@
 
 A modern, beautiful, and feature-rich lyrics finder and karaoke application built with React.
 
+[![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://hrishikesh-arch.github.io/lyrics-finder/) 
+*(Note: Replace the link above with your actual deployed URL if different)*
+
 ![Karaoke Mode](https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070&auto=format&fit=crop)
 
 ## ✨ Features
@@ -27,8 +30,8 @@ A modern, beautiful, and feature-rich lyrics finder and karaoke application buil
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/lyrics-finder-karaoke.git
-    cd lyrics-finder-karaoke
+    git clone https://github.com/hrishikesh-arch/lyrics-finder.git
+    cd lyrics-finder
     ```
 
 2.  Install dependencies:
