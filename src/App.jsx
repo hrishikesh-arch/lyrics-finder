@@ -192,7 +192,7 @@ function App() {
         </AnimatePresence>
 
         {view === 'lyrics' && (
-          <LyricsDisplay data={songData} theme={theme} />
+          <LyricsDisplay data={songData} theme={theme} onBack={handleBack} />
         )}
       </motion.div>
     </div>

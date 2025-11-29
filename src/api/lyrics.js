@@ -9,8 +9,12 @@ const ITUNES_URL = 'https://itunes.apple.com/search';
  */
 const getAsciiScore = (text) => {
     if (!text) return 0;
-    const asciiMatches = text.match(/[\x00-\x7F]/g);
-    return asciiMatches ? asciiMatches.length / text.length : 0;
+    // Remove LRC timestamps [mm:ss.xx] and whitespace to get pure text content
+    const cleanText = text.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').replace(/\s/g, '');
+    if (cleanText.length === 0) return 0;
+
+    const asciiMatches = cleanText.match(/[\x00-\x7F]/g);
+    return asciiMatches ? asciiMatches.length / cleanText.length : 0;
 };
 
 /**
@@ -39,16 +43,21 @@ export const searchSongs = async (query) => {
 export const fetchLyrics = async (artist, song, cachedSong = null) => {
     try {
         const query = `${artist} ${song}`;
+        const romanizedQuery = `${query} romanized`;
 
-        // 1. Fetch Lyrics from LRCLIB (skip if we already have synced lyrics in cachedSong)
-        let lyricsPromise;
+        // 1. Initiate BOTH searches in parallel for maximum speed
+        let standardSearchPromise;
         if (cachedSong && (cachedSong.plainLyrics || cachedSong.syncedLyrics)) {
-            lyricsPromise = Promise.resolve({ data: [cachedSong] });
+            standardSearchPromise = Promise.resolve({ data: [cachedSong] });
         } else {
-            lyricsPromise = axios.get(LRCLIB_URL, { params: { q: query } });
+            standardSearchPromise = axios.get(LRCLIB_URL, { params: { q: query } });
         }
 
-        // 2. Fetch Metadata from iTunes (handle error gracefully)
+        // Always fire the romanized search in background
+        const romanizedSearchPromise = axios.get(LRCLIB_URL, { params: { q: romanizedQuery } })
+            .catch(err => ({ data: [] })); // Catch errors silently
+
+        // 2. Fetch Metadata from iTunes (also in parallel)
         const metadataPromise = axios.get(ITUNES_URL, {
             params: { term: query, entity: 'song', limit: 1 }
         }).catch(err => {
@@ -56,44 +65,86 @@ export const fetchLyrics = async (artist, song, cachedSong = null) => {
             return { data: { resultCount: 0, results: [] } };
         });
 
-        const [lyricsRes, metadataRes] = await Promise.all([lyricsPromise, metadataPromise]);
+        // 3. Wait for the STANDARD search first
+        const [standardRes, metadataRes] = await Promise.all([standardSearchPromise, metadataPromise]);
 
-        // --- Process Lyrics ---
-        const results = lyricsRes.data || [];
-
-        // Filter for items with lyrics
-        const candidates = results.filter(item => item.plainLyrics || item.syncedLyrics);
+        // --- Process Standard Lyrics ---
+        const standardResults = standardRes.data || [];
+        const candidates = standardResults.filter(item => item.plainLyrics || item.syncedLyrics);
 
         if (candidates.length === 0) {
             throw new Error('Lyrics not found');
         }
 
-        // Sort candidates by ASCII score (descending) to prefer English/Romanized
+        // Sort by ASCII score
         candidates.sort((a, b) => {
             const scoreA = getAsciiScore(a.plainLyrics || a.syncedLyrics);
             const scoreB = getAsciiScore(b.plainLyrics || b.syncedLyrics);
             return scoreB - scoreA;
         });
 
-        const bestMatch = candidates[0];
-        let finalLyrics = bestMatch.plainLyrics || bestMatch.syncedLyrics;
+        let bestRomanized = candidates[0];
+        let bestOriginal = null;
 
-        // Clean up synced lyrics if necessary
-        if (!bestMatch.plainLyrics && bestMatch.syncedLyrics) {
-            finalLyrics = finalLyrics.replace(/^\[\d{2}:\d{2}\.\d{2}\]/gm, '');
+        // Check quality of our best standard result
+        const bestScore = getAsciiScore(bestRomanized.plainLyrics || bestRomanized.syncedLyrics);
+
+        // 4. DECISION POINT: Do we need the romanized search result?
+        if (bestScore < 0.5) {
+            console.log("⚠️ Standard result is native script. Checking background romanized search...");
+
+            const romanizedRes = await romanizedSearchPromise;
+            const romanizedResults = romanizedRes.data || [];
+
+            const romanizedCandidates = romanizedResults.filter(item => item.plainLyrics || item.syncedLyrics);
+            romanizedCandidates.sort((a, b) => {
+                const scoreA = getAsciiScore(a.plainLyrics || a.syncedLyrics);
+                const scoreB = getAsciiScore(b.plainLyrics || b.syncedLyrics);
+                return scoreB - scoreA;
+            });
+
+            if (romanizedCandidates.length > 0) {
+                const bestSecondary = romanizedCandidates[0];
+                const secondaryScore = getAsciiScore(bestSecondary.plainLyrics || bestSecondary.syncedLyrics);
+
+                if (secondaryScore > 0.8) {
+                    console.log("✅ Background romanized search provided better lyrics!");
+                    bestOriginal = bestRomanized;
+                    bestRomanized = bestSecondary;
+                }
+            }
+        } else {
+            // Standard search was good! Check for native script version for toggle.
+            const potentialOriginal = candidates[candidates.length - 1];
+            const originalScore = getAsciiScore(potentialOriginal.plainLyrics || potentialOriginal.syncedLyrics);
+
+            if (bestScore > 0.8 && originalScore < 0.6) {
+                bestOriginal = potentialOriginal;
+            }
         }
+
+        // Helper to clean synced lyrics
+        const cleanLyrics = (item) => {
+            if (!item) return null;
+            let text = item.plainLyrics || item.syncedLyrics;
+            if (!item.plainLyrics && item.syncedLyrics) {
+                text = text.replace(/^\[\d{2}:\d{2}\.\d{2}\]/gm, '');
+            }
+            return text;
+        };
+
+        const finalLyrics = cleanLyrics(bestRomanized);
+        const originalLyrics = cleanLyrics(bestOriginal);
 
         // --- Process Metadata ---
         let artwork = null;
-        let trackTitle = bestMatch.trackName;
-        let artistName = bestMatch.artistName;
+        let trackTitle = bestRomanized.trackName;
+        let artistName = bestRomanized.artistName;
         let genre = 'Unknown';
 
         if (metadataRes && metadataRes.data && metadataRes.data.resultCount > 0) {
             const track = metadataRes.data.results[0];
-            // Get high-res artwork (replace 100x100 with 600x600)
             artwork = track.artworkUrl100 ? track.artworkUrl100.replace('100x100', '600x600') : null;
-            // Use iTunes metadata as it's often cleaner
             trackTitle = track.trackName;
             artistName = track.artistName;
             genre = track.primaryGenreName;
@@ -104,7 +155,13 @@ export const fetchLyrics = async (artist, song, cachedSong = null) => {
 
         return {
             lyrics: finalLyrics,
-            syncedLyrics: bestMatch.syncedLyrics, // Return synced lyrics for Karaoke
+            syncedLyrics: bestRomanized.syncedLyrics,
+
+            // Dual Lyrics Data
+            hasDualLyrics: !!bestOriginal,
+            originalLyrics: originalLyrics,
+            originalSyncedLyrics: bestOriginal ? bestOriginal.syncedLyrics : null,
+
             artwork,
             youtubeUrl,
             title: trackTitle,
@@ -117,7 +174,6 @@ export const fetchLyrics = async (artist, song, cachedSong = null) => {
         if (error.response && error.response.status === 404) {
             throw new Error('Lyrics not found');
         }
-        // Return a more specific error message if possible
         throw new Error(error.message || 'Failed to fetch lyrics.');
     }
 };
